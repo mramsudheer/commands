@@ -1,0 +1,43 @@
+
+git commit -m "Releasing stable version v0.1.0"
+git tag v1.0.0
+
+git tag v1.0.0: Creates a local "bookmark" on your current commit.
+git push origin main: Uploads your actual code changes (the .tf files, outputs, etc.) to GitHub.
+git push origin --tags: Uploads the v0.12.0 label to GitHub so your production server can see it.
+
+
+to delete a tag from your local repository. It removes the "pointer" for v0.2.0 from your local machine. It does not delete the code or the commits; it just removes the version label
+git tag -l
+git tag -d v1.7.0 (Delete local)
+git push origin --delete v1.7.0 (Delete remote)
+git tag v1.7.0 (Re-create on current commit)
+git push origin --tags (Push fresh)
+
+Force-update the tag locally:
+git tag -f v0.4.0
+git push -f origin v0.4.0
+
+git fetch --tags
+git ls-remote --tags origin
+git fetch --tags --force
+git tag -l
+To switch your production server to that specific version, run:
+git checkout v0.4.0
+
+==============================================================================
+git init
+git add README.md
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/mramsudheer/k8s-blue-green.git
+git push -u origin main
+
+git init
+git remote add origin https://github.com/mramsudheer/terraform-aws-workstation.git
+git branch -M main
+git push -u origin main
+
+git remote set-url origin https://github.com/mramsudheer/terraform-aws-workstation.git
+git init
+git branch -M main

@@ -1,0 +1,3 @@
+Settings Gear -> Settings -> terminal size: to increase the font
+Settings Gear -> Settings -> Zoom
+CTRL+K and then Z for presentation mode

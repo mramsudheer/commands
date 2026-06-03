@@ -1,0 +1,27 @@
+
+docker images
+
+TO BUILD ALL IMAGES MENTIONED IN docker-compose.yaml
+docker compose up -d (in background) -> If images are already build, this will directly creates the containers
+
+TO REMOVE
+docker compose down
+
+docker rm -f frontend
+
+TO REBUILD ALL IMAGES
+docker compose up -d --build
+
+TO BUILD A SPECIFIC IMAGE
+docker compose build user
+
+RUNNING mangodb manually
+docker run -d --network roboshop --name mongodb joindevops/mongodb:1.0.0
+
+TO REMOVE ALL IMAGES
+docker rmi -f `docker images -aq`
+
+TO PUSH INTO DOCKER, FIRST LGOIN DOCKER
+docker login -u <username>
+p/w
+docker compose push

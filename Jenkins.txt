@@ -1,0 +1,24 @@
+In Jenkins URL -> Settings -> System -> Global Trusted Pipeline Libraries -> Add
+	Name: jenkins-test-library
+	Default Version:main
+	Retrieval method:
+		Modem SCM
+	Source code management:
+		Git
+		Project Repository:https://github.com/mramsudheer/shared-library-test.git
+
+Create new branch(feature-1) for https://github.com/mramsudheer/catalogue.git
+cd /c/DevOps_Practice_Code/catalogue
+git checkout -b feature-1
+git add . ; git commit -m "featureBranch" ; git push origin feature-1
+
+Goto C:\DevOps_Practice_Code\shared-library-test
+git add . ; git commit -m "sharedLibrary Code" ; git push origin main
+
+In Jenkins URL -> projectname(roboshop) -> create a new project(new item) -> Multibranch Pipeline
+		Branch Sources: 
+			Add Source: Git
+			Project Repository:https://github.com/mramsudheer/catalogue.git
+Now In Jenkins URL ->ROBOSHOP -> catalogue -> Scan Multibranch Pipeline Now -> We can see two pipelines created
+
+	

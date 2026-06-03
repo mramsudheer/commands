@@ -1,0 +1,118 @@
+VARIABLES:
+Declare AMI_ID, instance_type,ec2_tags, sg_name, subnet_id
+
+CONDITIONS:
+if environment is dev then t3.micro else t3.small
+
+LOOPS:
+	COUNT BASE
+	1. Create 10 instances for roboshop with proper name using count.index
+	2. Display the output
+	3. Now based on the above output, create the R53 records
+
+# Update the system
+dnf update -y
+
+# Install Git
+sudo dnf install git -y
+
+# Install Ansible
+sudo dnf install ansible -y
+
+# Install dependencies
+pip3.9 install netaddr
+pip3 install boto3 botocore
+
+
+# Install terraform
+sudo dnf config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+sudo dnf -y install terraform
+
+# Configure AWS
+aws configure
+
+us-east-1
+
+mkdir GitFolder
+cd GitFolder
+git clone https://github.com/mramsudheer/roboshop-ansible.git
+
+# This pings all 10 servers using your DNS names
+ansible all -i inventory.ini -m ping
+
+ansible-playbook -vv -i inventory.ini mongodb.yaml ; ansible-playbook -vv -i inventory.ini redis.yaml
+telnet redis-dev.intellifind.store 6379
+
+ansible-playbook -vv -i inventory.ini catalog.yaml ; ansible-playbook -vv -i inventory.ini user.yaml ; ansible-playbook -vv -i inventory.ini cart.yaml
+ssh ec2-user@cart-dev.intellifind.store 'sudo systemctl restart cart'
+curl http://catalog-dev.intellifind.store:8080/health
+curl http://user-dev.intellifind.store:8080/health
+curl http://cart-dev.intellifind.store:8080/health
+
+ansible-playbook -vv -i inventory.ini mysql.yaml ; ansible-playbook -vv -i inventory.ini shipping.yaml
+ssh ec2-user@cart-dev.intellifind.store 'sudo systemctl restart cart'
+curl http://shipping-dev.intellifind.store:8080/health
+
+ansible-playbook -vvv -i inventory.ini rabbitmq.yaml
+ansible-playbook -vv -i inventory.ini payment.yaml ; ansible-playbook -vv -i inventory.ini frontend.yaml
+
+******************************************************************************************************************
+sudo dnf clean all
+# Add Erlang repository
+curl -s https://packagecloud.io/install/repositories/rabbitmq/erlang/script.rpm.sh | sudo bash
+# Add RabbitMQ repository
+curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.rpm.sh | sudo bash
+sudo dnf install rabbitmq-server -y
+sudo systemctl enable rabbitmq-server
+sudo systemctl start rabbitmq-server
+
+sudo rabbitmqctl add_user roboshop roboshop123
+sudo rabbitmqctl set_permissions -p / roboshop ".*" ".*" ".*"
+******************************************************************************************************************
+
+telnet rabbitmq-dev.intellifind.store 5672
+or
+ansible rabbitmq-dev.intellifind.store -i inventory.ini -m shell -a "rabbitmqctl status" -b
+
+ansible-playbook -i inventory.ini payment.yaml
+
+ansible-playbook -i inventory.ini frontend.yaml
+
+# Create the Dynamic Inventory Config
+# In your project folder, create a file named inventory.aws_ec2.yml
+# Note: The filename must ends with aws_ec2.yml for the plugin to recognize it.
+		plugin: aws_ec2
+		regions:
+  		- us-east-1  # Change to your region
+
+		# Group servers by their Environment tag (dev)
+		filters:
+ 			 tag:Environment: dev
+  			instance-state-name: [ 'running' ]
+
+		# This creates groups based on the "Name" tag we created in Terraform
+		# It will create groups like 'mongodb-dev', 'redis-dev', etc.
+		keyed_groups:
+  			- key: tags.Name
+    			separator: ""
+# Configure Ansible SSH Access
+#In the same folder, create an ansible.cfg file. This tells Ansible how to connect to the RedHat instances.
+[defaults]
+inventory = inventory.aws_ec2.yml
+#remote_user = ec2-user
+#private_key_file = ~/path/to/your-key.pem  # Path to your .pem file
+host_key_checking = False
+
+# Verify the Connection
+ This pings all 10 servers using your DNS names
+ansible all -i inventory.ini -m ping
+ansible-inventory --graph
+
+ansible-inventory -i my_inventory.aws_ec2.yml --graph
+
+# -i points to your inventory file
+ansible-playbook -i inventory.ini roboshop.yml
+
+
+
+

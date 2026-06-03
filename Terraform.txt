@@ -1,0 +1,301 @@
+
+source /c/DevOps_Practice_Code/aws_keys.sh
+echo $AWS_DEFAULT_REGION
+
+terraform destroy
+/c/DevOps_Practice_Code/Ansible-Terraform/
+find . -type d -name ".terraform" -exec rm -rf {} +
+
+
+or
+in a specific folder(/c/DevOps_Practice_Code/Ansible-Terraform/infrastructure-live/dev/us-east-1/network)
+tf-reset
+
+terraform init -upgrade
+terraform apply -target=module.vpc --auto-approve
+terraform apply -auto-approve > /dev/null && terraform output
+terraform -chdir=network output && terraform -chdir=security output
+=====================================================================================
+The following will run terraform init and apply
+( run in /c/DevOps_Practice_Code/Ansible-Terraform/infrastructure-live/dev/us-east-1/)
+for i in network/ security/ bastion/; do 
+  echo "Processing $i..."
+  cd $i
+  terraform init -input=false
+  terraform apply --auto-approve
+  cd ..
+done
+
+for i in $(ls -d *);
+
+FOR CREATING
+for i in network/ security/ bastion/; do cd $i; terraform apply --auto-approve
+
+FOR DELETING
+for i in bastion/ security/ network/; do cd $i; terraform destroy --auto-approve; cd ..; done
+=========================================================================================
+cd terraform/roboshop
+echo -e ".terraform/\n*.tfstate\n*.tfstate.backup\n.terraform.lock.hcl" > .gitignore
+echo -e ".terraform/\n*.tfstate\n*.tfstate.backup\n.terraform.lock.hcl\ntfplan" > .gitignore
+
+terraform init
+terraform validate
+
+terraform plan -no-color > plan_output.txt
+
+terraform plan -no-color | tee plan_output.txt
+
+
+terraform plan -out=tfplan
+terraform show -no-color tfplan > plan_readable.txt
+terraform show -json tfplan > plan.json
+
+terraform apply "tfplan"
+
+terraform apply --auto-approve
+
+===========================================================================================
+Enable NATGATEWAY in local network folder(infrastructure-live\dev\us-east-1\network\terraform.tfvars) and run terraform apply in local
+terraform apply -target=module.vpc --auto-approve
+connect to Bastion server
+
+sudo dnf install git -y
+
+# Install ansible
+sudo dnf install ansible -y
+pip3.9 install netaddr
+pip3 install boto3 botocore
+
+aws configure
+
+# Install terraform
+sudo dnf config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+sudo dnf -y install terraform
+
+in bastion
+mkdir GitFiles
+cd GitFiles
+git clone https://github.com/mramsudheer/Ansible-Terraform.git
+git clone https://github.com/mramsudheer/ansible-roboshop-roles-tf.git
+copy live/network/terraform.tfstate to Bastion
+copy live/security/terraform.tfstate to Bastion
+
+
+GitFiles/Ansible-Terraform/infrastructure-live/dev/us-east-1/databases
+terraform apply --auto-approve > /dev/null && terraform output
+
+in catalogue server:
+
+telnet mongodb-dev.intellifind.store 27017
+telnet redis-dev.intellifind.store 6379
+telnet mysql-dev.intellifind.store 3306
+telnet rabbitmq-dev.intellifind.store 5672
+
+
+GitFiles/Ansible-Terraform/infrastructure-live/dev/us-east-1/catalouge
+terraform destroy --auto-approve > /dev/null && terraform output
+
+GitFiles/Ansible-Terraform/infrastructure-live/dev/us-east-1/databases
+terraform destroy --auto-approve > /dev/null && terraform output
+
+IN LOCAL:
+Disable NATGATEWAY in local network folder(infrastructure-live\dev\us-east-1\network\terraform.tfvars)
+
+
+infrastructure-live\dev\us-east-1\network
+terraform apply --auto-approve > /dev/null && terraform output (RUN 2 times with 5 mins interval)
+
+infrastructure-live\dev\us-east-1\bastion
+terraform apply --auto-approve > /dev/null && terraform output
+===========================================================================
+MODULE:
+	AWS-VPC:
+		variables.tf -> vpc_cidr, public_subnet_cidrs, private_subnet_cidrs, database_subnet_cidrs, azs, 						nat_gateway_enable(B), static_ip, environment, project_name, common_tags
+		
+		main.tf -> RESOURCE aws_vpc, aws_subnet(Public), aws_subnet(Private), aws_subnet(Database), aws_internet_gateway, 			   aws_route_table(Public), aws_route_table_association(Public), aws_eip, aws_nat_gateway, 					   aws_route_table(Private), aws_route_table_association(Private), aws_route_table(Database), 					   aws_route_table_association(Database)
+
+		output.tf -> vpc_id, public_subnet_ids, private_subnet_ids, database_subnet_ids, igw_id, nat_gateway_id, 				     nat_pubic_ip, nat_eip_public_ip, project_name, environment, common_tags
+	
+	ssm-perameters:
+		variables.tf -> vpc_id, public_subnet_ids, private_subnet_ids, database_subnet_ids, igw_id, nat_gateway_id, 					nat_eip_public_ip, sg_map
+
+LIVE:
+	NETWORK:
+		variables.tf -> vpc_cidr, public_subnet_cidrs, private_subnet_cidrs, database_subnet_cidrs, azs, 						nat_gateway_enable(B), static_ip, environment, project_name, common_tags
+
+		terraform.tfvars(VALUES ASSIGNING) -> vpc_cidr, public_subnet_cidrs, private_subnet_cidrs, database_subnet_cidrs, 						      azs, nat_gateway_enable(B), static_ip, environment, project_name, common_tags
+
+		main.tf -> MODULE vpc source = "../../../../terraform-modules/modules/aws-vpc"
+		output.tf -> FROM MODULE vpc_id, public_subnet_ids, private_subnet_ids, database_subnet_ids, igw_id, nat_eip_public_ip, 				     nat_gateway_id
+=====================================================================================================================================
+MODULE:
+	AWS-SG:
+		variables.tf -> project_name, env, common_tags, component_name, vpc_id, sg_ingress_rules[from port, to port, 			protocol, description, cidr_blocks, source_security_group_id, source_type] 
+
+		main.tf -> RESOURCE aws_security_group(Declare ingress and egress rules)
+		output.tf -> sg_id
+LIVE:
+	security:
+		variables.tf -> project_name, env, common_tags, component_name, security_configs(ingress_rules[from port, to port, 				protocol, description, cidr_blocks, source_security_group_id, source_type])
+
+		terraform.tfvars(VALUES ASSIGNING) -> project_name, env, common_tags, security_configs(Declare all 10 servers ingress 						      and egress rules)
+		data.tf -> aws_ssm_parameter(vpc_id), public_subnet_ids, private_subnet_ids, database_subnet_ids, 					   aws_internet_gateway, aws_nat_gateways, aws_nat_gateway
+
+		main.tf -> MODULE bastion_sg (source = "../../../../terraform-modules/modules/aws-sg", project_name, env, 				   common_tags, component_name, vpc_id(frm data), sg_ingress_rules)(Similarly creates SG for remaining as 	      		   well). public_subnet_ids(frm ssm), private_subnet_ids(frm ssm), database_subnet_ids(frm ssm), igw_id(frm 			   ssm), nat_gateway_id(frm ssm), nat_eip_public_ip(frm ssm), ssm(stores all sg-ids in SSM Parameter Store
+=====================================================================================================================================
+
+MODULE:
+	AWS-EC2:
+		variables -> ami_id, instance_type, subnet_id, sg_ids, project_name, env, component_name, common_tags
+		main.tf -> RESOURCE aws_instance
+		output.tf ->
+LIVE:
+		variables -> instance_type, common_tags, project_name, env,ami_id, region, owner_id, ami_name
+
+		terraform.tfvars(VALUES ASSIGNING) -> instance_type, project_name, env, common_tags, region, ami_id, instance_type, 						      owner_id, ami_name
+
+		data.tf -> vpc_id(aws_ssm_parameter), public_subnet_ids(aws_ssm_parameter), bastion_sg_id(aws_ssm_parameter), 				   custom_ami(tfvars), owner_id(tfvars), ami_name(tfvars)
+
+		main.tf -> RESOURCE aws_instance
+		output.tf -> bastion_instance_id, bastion_public_ip, bastion_private_ip, bastion_security_group
+=====================================================================================================================================
+LIVE:
+databases:
+	MONOGDB:
+		variables -> project_name, env, instance_type, common_tags, ami_id, region, owner_id, ami_name, hosted_zone_id, 			     hosted_zone_name, domain_name
+
+		terraform.tfvars(VALUES ASSIGNING) -> instance_type, project_name, env, common_tags, region, ami_id, instance_type, 						      owner_id, ami_name, hosted_zone_id, hosted_zone_name, domain_name
+
+
+		data.tf -> vpc_id(aws_ssm_parameter), private_subnet_ids(aws_ssm_parameter), mongodb_sg_id(aws_ssm_parameter), 				custom_ami(tfvars), owner_id(tfvars), ami_name(tfvars)
+
+		main.tf -> RESOURCE aws_instance, RESOURCE terraform_data(to connect remotly and execute commands)
+
+		output.tf ->mongodb_instance_id, mongodb_private_ip, mongodb_security_group, mongodb_r53_record
+
+	route53.tf -> RESOURCE aws_route53_record(for MongoDb, Redis)
+
+	REDIS:
+		security:
+			terraform.tfvars(VALUES ASSIGNING) -> security_configs(add ingress and egress rules for redis)
+			main.tf -> sg_ingress_rules
+
+		data.tf ->redis_sg_id(aws_ssm_parameter)
+
+		main -> RESOURCE aws_instance, RESOURCE terraform_data(to connect remotly and execute commands)
+=====================================================================================================================================
+LIVE:
+CATALOGUE:
+	variables -> project_name, env, instance_type, common_tags, ami_id, region, owner_id, ami_name, hosted_zone_id, 			     domain_name
+
+	terraform.tfvars(VALUES ASSIGNING) -> instance_type, project_name, env, common_tags, region, ami_id, instance_type, 						      owner_id, ami_name, hosted_zone_id, domain_name
+
+
+	data -> vpc_id(aws_ssm_parameter), private_subnet_ids(aws_ssm_parameter), catalogue_sg_id(aws_ssm_parameter), 				custom_ami(tfvars), owner_id(tfvars), ami_name(tfvars)
+
+	main.tf -> RESOURCE aws_instance
+	route53.tf -> RESOURCE aws_route53_record
+	output.tf ->catalogue_instance_id, catalogue_private_ip, catalogue_security_group, catalogue_r53_record
+
+=====================================================================================================================================
+BACKEND_ALB:
+	security:
+		terraform.tfvars(VALUES ASSIGNING) -> security_configs(add ingress and egress rules for backend)
+		main.tf -> sg_ingress_rules, 
+			   Added the backend_alb_sg and frontend_alb_sg module calls.
+			   Updated the app_security_groups loop to map the "BackEnd ALB" source type to the actual ALB SG ID.
+			   Added the backend_alb_to_apps standalone rule for inter-service communication.
+
+		outputs.tf -> Updated the security_group_ids map to include backend_alb and frontend_alb.
+	backend_alb:
+		variables.tf ->
+		terraform.tfvars(VALUES ASSIGNING) ->
+		data.tf -> Fetched the VPC ID, private subnet IDs, and the backend_alb_sg_id from SSM.
+		main.tf -> Defined the aws_lb (internal), the aws_lb_listener (port 80) with a default fixed response, 
+			   and configured subnets/security groups.
+			   Added the aws_ssm_parameter resource for backend_listener_arn (sourced from the backend_alb remote state).
+		outputs.tf -> Exported the backend_listener_arn and backend_alb_dns_name.
+	catalogue:
+		data.tf -> Fetched the backend_listener_arn and all five app_sg_ids from SSM.
+		main.tf -> Added for_each loops to create Target Groups, Launch Templates, and Auto Scaling Groups for all 5 apps.
+			   Added the aws_lb_listener_rule to create host-header routing (e.g., catalogue.dev.intellfind.store) on the 			   shared ALB.
+			   Added the aws_autoscaling_policy for CPU-based scaling.
+terraform apply --auto-approve -> backend_alb,  catalogue
+=====================================================================================================================================
+ACM:
+	variables.tf -> Declared variable "hosted_zone_id" and variable "domain_name".
+	terraform.tfvars(VALUES ASSIGNING) ->Added your specific Hosted Zone ID (e.g., Z0123456...).
+					     Added your Domain Name (e.g., intellfind.store).
+	main.tf -> aws_acm_certificate: Requests the certificate for *.intellfind.store.
+		   aws_route53_record: Automatically creates the validation CNAME records in your Hosted Zone using 						       var.hosted_zone_id.
+		   aws_acm_certificate_validation: Tells Terraform to wait until AWS confirms the status is "Issued".
+		   aws_ssm_parameter: Stores the resulting ARN in SSM so the Frontend ALB can find it.
+
+	outputs.tf ->output "certificate_arn": Displays the full AWS ARN of the issued certificate.
+
+=====================================================================================================================================
+FRONTEND_ALB:
+security:
+		terraform.tfvars(VALUES ASSIGNING) -> security_configs(add ingress and egress rules for backend)
+		main.tf -> sg_ingress_rules, 
+			   Added the backend_alb_sg and frontend_alb_sg module calls.
+			   Updated the app_security_groups loop to map the "BackEnd ALB" source type to the actual ALB SG ID.
+			   Added the backend_alb_to_apps standalone rule for inter-service communication.
+
+		outputs.tf -> Updated the security_group_ids map to include backend_alb and frontend_alb.
+				   
+	frontend_alb:
+		variables.tf -> Defines project_name, env, common_tags, hosted_zone_id, and domain_name (intellifind.store).
+		terraform.tfvars(VALUES ASSIGNING) -> provides values for project_name, env, common_tags, hosted_zone_id, and 							      domain_name(intellifind.store).
+		data.tf -> VPC & Public Subnet IDs, Frontend ALB SG ID(the one allowing port 80 and 443): Fetched from SSM.
+				ACM Certificate ARN: Fetched from the parameter you just verified in the acm folder.
+		route53.tf -> aws_route53_record: Creates an Alias Record for dev.intellifind.store. It points directly to your 			      Frontend ALB’s DNS name so users can find your site.
+		main.tf -> aws_lb: Creates the Public/External ALB in your Public Subnets.
+			   aws_lb_listener (Port 80): Catches HTTP traffic and Redirects it to HTTPS (Port 443).
+			   aws_lb_listener (Port 443): The secure listener using your ACM Certificate.
+			   aws_ssm_parameter: Stores the frontend_listener_arn in SSM. This is the Self-Cleaning part; it gets 				   deleted if you destroy this folder.
+
+		outputs.tf -> Exported the frontend_alb_dns_name and frontend_listener_arn.
+terraform apply --auto-approve -> acm,frontbackend_alb
+
+=====================================================================================================================================
+FRONTEND:
+	variables.tf ->
+	terraform.tfvars -> Updated with your specific domain name and instance configurations.
+	data.tf -> Fetches the VPC ID, private subnets, frontend security group, and the shared frontend listener ARN from SSM.
+	main.tf -> Contains the aws_lb_target_group, aws_launch_template (with embedded user_data), aws_autoscaling_group, and 			   aws_lb_listener_rule.
+
+=====================================================================================================================================
+The Creation Order (The Build)
+	VPC / Networking: (Assuming this is already done).
+	Security: Create all Security Groups first so they are ready for the resources.
+	change nat_gateway_enable = true in infrastructure-live\dev\us-east-1\network\terraform.tfvars and run terraform apply in 	local
+	In local, terraform apply in bastion folder
+	
+	in Bastion -> increase the disk size to 50Gb -> THIS IS AUTOMATED
+	aws configure
+# Configure AWS
+aws configure
+
+us-east-1
+	Copy security state file from local to bastion
+	Databases: Launch MongoDB, MySQL, Redis, RabbitMQ. Apps cannot start without their DBs.
+	ACM: Request and validate your SSL certificate (it takes a few minutes to issue).
+	Backend ALB: Create the internal load balancer.
+	Frontend ALB: Create the public load balancer (depends on ACM).
+	SSM: Run terraform apply to sync to store all the new ARNs (ALB Listeners) and IDs.
+	App Servers (Catalogue, User, etc.): Launch these now; they will "plug into" the Backend ALB and DBs.
+	Frontend Servers: Launch these last. They "plug into" the Frontend ALB and point to the Backend ALB.
+The Destruction Order (The Tear Down)
+Destruction is the exact reverse. You must remove the "Consumers" before the "Producers."
+	In Bation
+	Frontend Servers: Delete these first to stop public traffic.
+	App Servers: Delete the microservices. This "unplugs" them from the ALB and DBs.
+	Frontend ALB: Delete the public entry point.
+	Backend ALB: Delete the internal entry point.
+	SSM: Run terraform apply (as we discussed) to clean up the "Ghost" ARNs.
+	Databases: Delete the data tier.
+	ACM: Delete the certificate.
+	In local terraform destroy in bastion folder
+	In local change nat_gateway_enable = true in infrastructure-live\dev\us-east-1\network\terraform.tfvars and run terraform 	apply
+	Security: Delete the security groups last. (AWS won't let you delete an SG if a server is still using it).

@@ -1,0 +1,61 @@
+kubectl apply -f  01-namespace.yaml
+for i in mongodb/ redis/ mysql/ rabbitmq/ catalogue/ user/ cart/ shipping/ payment/ frontend/; do cd $i; kubectl  apply -f manifest.yaml; cd ..;done
+
+kubectl get sa aws-load-balancer-controller -n kube-system
+kubectl describe sa sa aws-load-balancer-controller -n kube-system
+kubectl delete sa aws-load-balancer-controller -n kube-system
+helm uninstall aws-load-balancer-controller -n kube-system
+kubectl delete secret aws-load-balancer-tls -n kube-system
+helm list
+helm list -n kube-system
+kubectl delete clusterrole aws-load-balancer-controller-role -n kube-system
+kubectl delete clusterrolebinding aws-load-balancer-controller-rolebinding
+
+kubectl get role -n kube-system
+kubens kube-system
+kubectl delete clusterrole aws-load-balancer-controller-role -n kube-system
+kubectl get role -n kube-system
+kubens kube-system
+kubectl delete role aws-load-balancer-controller-leader-election-role
+kubectl get rolebinding -n kube-system
+kubectl delete rolebinding aws-load-balancer-controller-leader-election-rolebinding
+
+============================================================
+apiVersion:
+kind: configMap
+metadata:
+	name:
+	namespace:
+	labels:
+data:
+
+---
+apiVersion:
+kind: Deployment
+metadata:
+	name:
+	namespace:
+	labels:
+spec:
+	replicas:
+	selector:
+		matchLabels:
+	template:
+		metadata:
+			labels:
+		spec:
+			containers:
+			name:
+			image:
+---
+service
+apVersion
+kind
+metadata:
+	name:
+	namespace:
+	labels:
+spec:
+	selector:
+	ports:
+
