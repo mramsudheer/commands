@@ -41,3 +41,6 @@ git push -u origin main
 git remote set-url origin https://github.com/mramsudheer/terraform-aws-workstation.git
 git init
 git branch -M main
+
+To check the status of all your Git repositories at once
+cd /c/DevOps_Practice_Code && find . -maxdepth 2 -name ".git" -type d -exec sh -c 'cd "{}"/.. && echo -e "\n=== \033[1;34m$(basename "$PWD")\033[0m ===" && git status -s' \;

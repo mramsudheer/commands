@@ -1,0 +1,23 @@
+DevOps Day to Day Activities Interview Script
+
+In my current project I am working as a DevOps Engineer where my responsibility is to maintain CI CD pipeline, manage infrastructure in AWS cloud, handle deployments, monitor production servers, and support development team. In our project we are using Jenkins, Docker, Kubernetes, Terraform, Ansible and AWS services.
+
+Every day my work starts with checking Jenkins pipelines. We have multiple pipelines for different applications. I verify whether nightly builds or scheduled builds are successful or failed. If any build fails, I check Jenkins console output logs, identify the issue, fix the pipeline or code related problem and trigger the build again. Sometimes I also update Jenkins file or create new jobs for new services.
+
+After that I check Docker related tasks. We are using Docker for containerization. Whenever developers push code, Jenkins builds Docker image and pushes it to DockerHub or AWS ECR. If image build fails, I check Dockerfile, dependency issues, or permission issues. I also check running containers and logs if application is not working properly.
+
+Next I check Kubernetes cluster status. We are deploying applications in Kubernetes. Daily I verify pod status, node status and deployments. If any pod is in crash state or not running, I check pod logs, describe the pod, find the root cause and redeploy the application. Sometimes I update deployment yaml files, change image version, or scale the application based on requirement.
+
+I also monitor AWS infrastructure daily. Our project is hosted in AWS. I check EC2 instance status, load balancer health check, auto scaling group status and CloudWatch alarms. If any CPU or memory alert comes, I login to server, check logs, check running services and restart the service if needed. I also verify security groups, IAM roles and storage if there is any issue.
+
+We are using Terraform for infrastructure provisioning. Whenever new environment or new server is required, I update terraform code, run terraform init, terraform plan and terraform apply to create resources like EC2, VPC, Load balancer and security groups. If terraform shows error, I fix syntax or dependency issues.
+
+We use Ansible for configuration management. After creating servers, we use Ansible playbooks to install required software like Docker, Java, Tomcat and other packages. If configuration fails, I check inventory file, playbook syntax and connection issues.
+
+I also handle production alerts daily. Alerts come from monitoring tools or CloudWatch. When alert comes, first I check server status, then check application logs, then check Kubernetes pods and Jenkins deployment history. After finding the issue, I fix it and update the ticket.
+
+In our project we use ticketing tool like Jira or ServiceNow. When issue comes, ticket will be assigned to DevOps team. First level team does basic check, then issue comes to my level for detailed troubleshooting. If issue is related to code, we assign to development team.
+
+Every day we have standup meeting with team. In standup we discuss what work we did yesterday, what we will do today and any blockers.
+
+Overall my daily work includes Jenkins pipeline monitoring, Docker image build, Kubernetes deployment, AWS monitoring, Terraform infrastructure changes, Ansible configuration, and production issue troubleshooting.
