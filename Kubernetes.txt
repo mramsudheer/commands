@@ -20,6 +20,57 @@ kubectl delete role aws-load-balancer-controller-leader-election-role
 kubectl get rolebinding -n kube-system
 kubectl delete rolebinding aws-load-balancer-controller-leader-election-rolebinding
 
+Number of installed k8s objects
+ kubectl api-resources -o name
+
+To check the default pods status in 'kube-system' namespace. There are created automatically
+kubectl get pods -n kube-system
+
+TO LIST THE AVAILABLE NODES
+kubectl get nodes
+
+TO SEE THE SPECIFIC NODE ROLE
+kubectl get nodes <NODENAME>
+
+TO SEE THE NODE DETAILS
+kubectl get nodes <NODENAME> -o yaml
+
+kubectl describe nodes <NODENAME>
+
+TO CRETE POD - WRITE YAML FILE
+kubectl create -f .yaml
+
+AFTER DOING THE CHANGES IN YAML FILE
+vi .yaml or kubectl edit pod  <podname>
+kubectl apply -f .yaml
+
+TO DELETE POD
+kubectl delete pod <podname>
+
+TO CREATE NAMESPACE
+kubectl create ns my-ns
+kubectl get namespaces
+
+TO SEE THE PODS AVAILABILITY IN THE GIVEN NAMESPACE
+kubectl get pods -n my-ns
+kubectl describe <podname> -n my-ns -> Generally used for troubleshooting (usally will check the 'Events' block)
+
+To see the environment variables set in a running pod, use the following command:
+kubectl exec -it configmap-demo-1 -- printenv
+
+To create a ConfigMap from multiple literal values, use the following command:
+kubectl create configmap configmap-2 --from-literal=name=second-configmap --from-literal=color=blue
+
+To see the environment variables set in a running pod, use the following command:
+kubectl exec -it configmap-demo-2 -- printenv
+
+To create a ConfigMap from a file, use the following command:
+kubectl create configmap configmap-3 --from-file=data-file
+
+To see the ConfigMaps created in your Kubernetes cluster, use the following command:
+kubectl get cm
+kubectl describe cm configmap-1
+
 ============================================================
 apiVersion:
 kind: configMap
@@ -58,4 +109,12 @@ metadata:
 spec:
 	selector:
 	ports:
+====================================================
+DAST(Dynamic Application Security Testing)
+=====================================
+Tillnow we have seen static source code analysis, SAST(static application and security testing)SonarScan, Library Scan(Dependabot), Image Scan (Trivy).
+
+DAST means testing our application while it is running to find security vulnerabilities before it goes live, or while it is in production. During a scan, the tool dynamically injects malicious payloads to attack the application URL. This process is completed before moving the project to production, or on a recurring basis every three months, using either internal tools or third-party services. Based on the findings, the team will verify and address the discovered vulnerabilities.
+
+Veracode is the one of the DAST tool. It has free trail, but we need organization email.
 
