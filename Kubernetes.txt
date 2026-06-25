@@ -46,6 +46,7 @@ kubectl apply -f .yaml
 
 TO DELETE POD
 kubectl delete pod <podname>
+kubectl delete pod <podname> --now
 
 TO CREATE NAMESPACE
 kubectl create ns my-ns
